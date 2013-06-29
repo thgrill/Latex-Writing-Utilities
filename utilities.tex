@@ -1,0 +1,633 @@
+\documentclass[a4paper,12pt]{article}
+%	postits, notes, ... visible
+%
+% note. these 
+\textheight    23cm
+\textwidth      14cm
+\topmargin      0.35cm
+\headheight     0.0in
+\headsep        0.0in
+\parindent      0cm
+\parskip        12pt
+\oddsidemargin -0.5cm
+\def\baselinestretch{1}
+%\renewenvironment{abstract}{
+%\textbf{Abstract.} \it }{\\}
+%--------------------------------------------------------------------------------------------------------------
+%--------------------------------------------------------------------------------------------------------------
+% PACKAGES
+%--------------------------------------------------------------------------------------------------------------
+%--------------------------------------------------------------------------------------------------------------
+
+%tables
+\usepackage[usenames,dvipsnames]{color}
+
+\usepackage{longtable,tabularx,colortbl,booktabs,multirow}
+\usepackage{url}
+
+%--------------------------------------------------------------------------------------------------------------
+% postits, todos, ....
+%--------------------------------------------------------------------------------------------------------------
+\usepackage{utilities} % Library/texmf/latex/tex/utilities.sty
+%possible modes:
+% draft/submission/final/draftNoComments
+\setMode[draft]
+
+%
+\setboxwidths{\textwidth}
+\setMargins{2cm}{2cm}{2cm}
+
+
+\title{Utilities.sty -- Latex Writing Aids\\ \bigskip \small Version 1.2.1}
+\author{Thomas Grill\\ \url{tom@tomgrill.info}}
+
+%------------------------------------------------------------------------------------------------- 
+% Document
+%------------------------------------------------------------------------------------------------- 
+\begin{document}
+%------------------------------------------------------------------------------------------------- 
+
+
+\maketitle
+
+
+\section{How to start \ldots}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Document header}
+%\label{sec:Document header}
+%---------------------------------------
+
+%\note{The document header is defined as all the text indicated before the \texttt{\textbackslash begin\{document\}} statement.}
+
+To start using the writing utilities 
+
+
+\begin{compactenum}
+\item Copy the style sheet ``utilities.sty'' into your document folder or any folder latex can access when searching for the style sheets.
+\item Simply copy the following code into your document before the \verb+\begin{document}+ command. 
+
+\item Copy the images to any directory where latex can find them. The current style files uses two images: \emph{bulb.jpg, important.jpg}
+\end{compactenum}
+
+Explainations are given as comments in the text:
+
+
+\begin{verbatim}
+
+%----------------------------------------------------------------------------
+% Latex writing utilities
+%----------------------------------------------------------------------------
+%include the utilities package
+\usepackage{utilities}  
+
+%Set to mode: draft,draftNoComments,submission,final (default)
+\setMode[draft]
+
+\end{verbatim}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Document body}
+%\label{sec:Document body}
+%---------------------------------------
+
+\note{The document body is defined as all the text indicated between the \texttt{\textbackslash begin\{document\}} and the \texttt{\textbackslash end\{document\}} statement.}
+
+
+\begin{verbatim}
+
+%check if we are in draft mode
+\ifshowDraft
+%%% DRAFT MODE %%%
+%Background Picture for Draftmode
+
+%set TOC depth to X
+
+        \setcounter{tocdepth}{3}
+        \makeatother
+        \AddToShipoutPicture{\BackgroundPicture{['''']}{21cm}{0}{images/draft}}
+%---------------------------
+        %list of TODOs, TOC, List of Figures in Draft Mode
+        \listoftodos 
+        \tableofcontents
+        \listoffigures
+%---------------------------	
+        \newpage
+%---------------------------
+	
+%adjust margins so that the sidecomments fit
+
+        \setMargins{0cm}{0cm}{0cm} % {odd}{even}{top}
+
+% define the widths for the comments if necessary
+
+%        space required for side comment
+        \setlength{\sidecommentwidth}{3cm} 
+%        width of the comment box	
+        \setlength{\sidecommentboxwidth}{3.3cm} 
+%        is the sidecomment on the left or right side
+        \setboolean{sidecommentleft}{false} 
+%        set document to single space mode	
+        \singlespace 
+
+\else
+%%% DOCUMENT FINAL %%% 
+% = NON DRAFT
+%
+%
+        \maketitle
+        \tableofcontents
+        \listoffigures
+\fi % END IF	
+%
+
+\newpage
+
+% define the widths for the boxes:
+%        this function sets the widths for the todo, comment, and postit box to the 
+%        specified value
+%
+\setboxwidths{\textwidth} % adjusting the boxes to the textwidth
+
+
+\end{verbatim}
+%------------------------------------------------------------------------------------------------- 
+%------------------------------------------------------------------------------------------------- 
+% Print todo list
+%------------------------------------------------------------------------------------------------- 
+%------------------------------------------------------------------------------------------------- 
+\newpage
+%------------------------------------------------------------------------------------------------- 
+% - Section
+%------------------------------------------------------------------------------------------------- 
+\section{List Of ToDo's}
+%\label{sec::List Of ToDo's}
+%------------------------------------------------------------------------------------------------- 
+
+Print the list of todo's using the \texttt{\textbackslash listoftodos} command. 
+
+Result:
+
+%print the list of todos
+\listoftodos
+
+\newpage
+%------------------------------------------------------------------------------------------------- 
+%------------------------------------------------------------------------------------------------- 
+%------------------------------------------------------------------------------------------------- 
+%------------------------------------------------------------------------------------------------- 
+%------------------------------------------------------------------------------------------------- 
+
+%------------------------------------------------------------------------------------------------- 
+% - Section
+%------------------------------------------------------------------------------------------------- 
+\section{Postit}
+%\label{sec::}
+%------------------------------------------------------------------------------------------------- 
+
+
+%--------------------------------
+%postit - comment 
+\postit {
+A little postit
+}
+%end of postit - comment
+%--------------------------------
+
+\begin{verbatim}
+\postit {A little postit}
+\end{verbatim}
+
+%------------------------------------------------------------------------------------------------- 
+% - Section
+%------------------------------------------------------------------------------------------------- 
+\section{Todos}
+%\label{sec::Todos}
+%------------------------------------------------------------------------------------------------- 
+
+
+%--------------------------------
+%ToDo 
+\todo {
+A todo item ...
+}
+%end of ToDo
+%-------------------------------- 
+
+\begin{verbatim}
+\todo {A todo item ...}
+\end{verbatim}
+
+
+%------------------------------------------------------------------------------------------------- 
+% - Section
+%------------------------------------------------------------------------------------------------- 
+\section{Comments}
+%\label{sec::}
+%------------------------------------------------------------------------------------------------- 
+
+\subsection {Sidecomment}
+
+Syntax: \verb@\sidecomment{Text}@.
+
+Example: \sidecomment{text} 
+
+If you want to replace the symbol simply provide it as a default parameter like \verb@\sidecomment[XX]{comment}@.
+
+Example: \sidecomment[XX]{comment}
+
+\important{The side comment does not work with the ACM style as it does not allow: \mono{margin par}}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Comment}
+%\label{sec:Comment}
+%---------------------------------------
+
+Syntax: \verb@\comment[Title]{Text}@
+
+Example:
+\comment [Commenttext]{A centered comment box filling the whole line!}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{A grey box}
+%\label{sec:GreyComment}
+%---------------------------------------
+
+Syntax: \verb@\greybox[Title]{Text}@
+
+Example:
+\greybox [Grey comment]{A centered grey box filling the whole line!} 
+
+%------------------------------------------------------------------------------------------------- 
+% - Section
+%------------------------------------------------------------------------------------------------- 
+\section{Notes}
+%\label{sec::}
+%------------------------------------------------------------------------------------------------- 
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Standard Note}
+%\label{sec:Standard Note}
+%---------------------------------------
+
+Syntax: \verb|\note[XXX]{Text}|
+
+\note {A standard note. $\backslash note\{Text\}$}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Important note}
+%\label{sec:Important note}
+%---------------------------------------
+
+Syntax: \verb|\important[XXX]{Text}|
+
+\important {An important note. $\backslash important\{Text\}$}
+
+In order to use the idea note you need to copy the image "important.jpg" to a location where latex can find it!
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Idea note}
+%\label{sec:Idea note}
+%---------------------------------------
+
+Syntax: \verb|\iidea[XXX]{Text}|
+
+\idea {An idea note. $\backslash idea\{Text\}$}
+
+In order to use the idea note you need to copy the image "bulb.jpg" to a location where latex can find it!
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{RoundedTitleBox}
+%\label{sec:}
+%---------------------------------------
+
+Syntax: \verb|\roundedTitlebox[width]{Title}{Text}|
+
+\roundedTitlebox[10cm]{RoundedTitlebox}{A titlebox of width ``Width'': $\backslash roundedTitlebox[Width]\{Title\}\{Text\}$}
+
+Syntax: \verb|\rTitlebox{Title}{Text}|
+
+\rTitlebox{RoundedTitlebox}{A titlebox filling the whole line: $\backslash rtitlebox\{Title\}\{Text\}$}
+
+Syntax: \verb|\example{Text}|
+
+\example {An example: $\backslash example[Title]\{Text\}$; default title = ``Example''}
+
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Paragraph formatting}
+%\label{sec:}
+%---------------------------------------
+
+\paragraph{Indent a paragraph} 
+
+\indentpar {An indented paragraph: $\backslash indentpar[width]\{Text\}$. Default width = 1cm}
+
+\paragraph{Sourceinput} 
+
+Display code-text from input file: $\backslash sourceinput\{filename\}$. 
+
+\paragraph{Mono spaced}
+
+Display code-text in mono-spaced: $\backslash mono\{text\}$. This is an abbreviation to using the verbatim environment.
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Marker}
+%\label{sec:}
+%---------------------------------------
+
+\subsubsection{Marker} 
+
+Display code-text with a marker-background color.
+
+Syntax: \verb|\marker[bgcolor]{Text}|. 
+
+\textit{Note: bgcolor maybe one value out of ``Y,Yellow, G, Green, P, Pink''. Default: yellow}
+
+
+\example [Marker example]{
+
+Sed nisl mi, pretium quis blandit eu, pharetra id augue. In adipiscing felis quam. Maecenas imperdiet placerat suscipit. Sed leo sem, iaculis et rhoncus sit amet, commodo sed dolor. Duis id blandit nunc. Pellentesque consectetur libero at nulla consectetur euismod. In blandit tincidunt leo non luctus. Vestibulum ut tellus vitae augue tristique porttitor. 
+\marker {Vestibulum blandit} risus sed nibh commodo in elementum ante vehicula. Proin facilisis, felis et placerat consectetur, ante erat ultrices elit, eget \marker[G] {aliquet purus} massa et augue. Vestibulum ante augue, dapibus sit amet sollicitudin vel, luctus ut elit. Quisque eu purus eu \marker[P] {justo venenatis} auctor.
+
+
+}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Marker box}
+%\label{sec:markbox}
+%---------------------------------------
+
+When you mark one or more paragraphs maybe ``markbox fits better''.
+
+Syntax: \verb|\markbox[bgcolor]{Text}|. 
+
+\example [markbox example]{
+
+Sed nisl mi, pretium quis blandit eu, pharetra id augue. In adipiscing felis quam. Maecenas imperdiet placerat suscipit. Sed leo sem, iaculis et rhoncus sit amet, commodo sed dolor. Duis id blandit nunc. Pellentesque consectetur libero at nulla consectetur euismod. In blandit tincidunt leo non luctus. Vestibulum ut tellus vitae augue tristique porttitor. 
+
+\markbox {Vestibulum blandit risus sed nibh commodo in elementum ante vehicula. Proin facilisis, felis et placerat consectetur, ante erat ultrices elit, eget aliquet purus massa et augue. }
+
+ Vestibulum ante augue, dapibus sit amet sollicitudin vel, luctus ut elit. Quisque eu purus eu justo venenatis auctor.
+
+
+}
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Lists, enumerations}
+%\label{sec:}
+%---------------------------------------
+
+\paragraph{Compactlist and Compactenum}
+
+A flexible list that is single spaced and fits nicely in the standard latex styles. 
+
+\begin{longtable}{m{5cm} m{8cm}}
+\endfirsthead
+\endhead
+\endfoot
+\endlastfoot
+
+\hline
+\begin{compactlist}
+\item Item 1
+\item Item 2
+\item Item 3
+\end{compactlist}
+&
+	\begin{verbatim}
+\begin{compactlist}
+\item Item 1
+\item Item 2
+\item Item 3
+\end{compactlist}
+	\end{verbatim}\\
+\hline
+
+
+\begin{compactlist}[\done]
+\item Item 1
+\item [\rejected] Item 2
+\item Item 3
+\end{compactlist}
+&
+\begin{verbatim}
+\begin{compactlist}[\done]
+\item [\done]Item 1
+\item [\rejected] Item 2
+\item [\done]Item 3
+\end{compactlist}
+\end{verbatim}\\
+\hline
+
+\begin{compactenum}
+\item Item 1
+\item Item 2
+\item Item 3
+\end{compactenum}
+&
+\begin{verbatim}
+\begin{compactenum}
+\item Item 1
+\item Item 2
+\item Item 3
+\end{compactenum}
+\end{verbatim}\\
+\hline
+
+\begin{compactenum}[a]
+\item Item 1
+\item Item 2
+\item Item 3
+\end{compactenum}
+&
+\begin{verbatim}
+\begin{compactenum}[a]
+\item Item 1
+\item Item 2
+\item Item 3
+\end{compactenum}
+\end{verbatim}\\
+\hline
+
+\end{longtable}
+
+The compactenum environment accepts the following parameters as a counter:
+
+\begin{tabbing}
+a \ldots \hspace{1em}\= a,b,c\\
+A \ldots \> A,B,C\\
+r \ldots \> i,ii,iii\\
+R \ldots \> I,II,III\\
+\end{tabbing}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Tables}
+%\label{sec:}
+%---------------------------------------
+
+To  adjust the padding of a table row:
+
+Make a rule representing the space in the toprow:
+
+$\backslash TopRowSpace$
+
+\textit{Note: Default height = 2.4ex}
+
+Maka a rule with no height/width but offset the rule to keep the bottom space of the table row 
+
+$\backslash BottomRowSpace$
+
+
+\begin{minipage}[b]{0.5\linewidth}
+\small
+\begin{longtable}{l l}
+\caption{Example width TopRowSpace Adjustment}\\
+\toprule
+\bf Heading 1 & \bf Heading 2\\
+\toprule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{2}{>{\TopRowSpace\columncolor{yellow}\bf}l<{\BottomRowSpace}}{Heading} \\
+%
+Col 1 & Col 2\\
+%
+\rowcolor{lightgrey}
+Col 1 & Col 2 \\
+%
+\end{longtable}
+\end{minipage}
+\begin{minipage}[b]{0.5\linewidth}
+\small
+\begin{longtable}{l l}
+\caption{without}\\
+\toprule
+\bf Col 1 & \bf Col 2\\
+\toprule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{2}{>{\columncolor{yellow}\bf}l}{Heading} \\
+%
+Col 1 & Col 2\\
+%
+\rowcolor{lightgrey}
+Col 1 & Col 2 \\
+%
+\end{longtable}
+\end{minipage}
+
+Please check the headings line with the yellow background color. 
+
+In the first example the column-height and the position of the text is adjusted using $\backslash TopRowSpace$ and $\backslash BottomRowSpace$.
+
+\textbf{Example 1:}
+
+\begin{verbatim}
+
+\multicolumn{2}{>{\TopRowSpace\columncolor{yellow}\bf}l<{\BottomRowSpace}}
+{Heading}
+\end{verbatim}
+
+\textbf{Example 2:}
+
+\begin{verbatim}
+\multicolumn{2}{>{\columncolor{yellow}\bf}l}{Heading}
+\end{verbatim}
+
+%--------------------------------------- 
+% - SubSection
+%---------------------------------------
+\subsection{Symbols}
+%\label{sec:Symbols}
+%---------------------------------------
+
+\begin{table}[htbp]
+\caption{Additional Symbols}
+\begin{center}
+\begin{tabularx}{\linewidth}{l l l}
+\toprule
+Name & Symbol & Description\\
+\toprule
+$\backslash la$ & \la \ & left arrow\\
+$\backslash ra$ & \ra \ & right arrow\\
+$\backslash check$ & \check \ & checkmark\\
+$\backslash cross$ & \cross \ & cross\\
+$\backslash degree$ & \degree \ & degree \\
+\midrule
+$\backslash missing$ & \missing & missing, still needs work\\
+$\backslash tbd$ & \tbd & to be defined\\
+$\backslash attention$ & \attention & attention\\
+$\backslash done$ & \done & done\\
+$\backslash rejected$ & \rejected & to be rejected, ignored\\
+\midrule
+$\backslash stop$ & \stop & stop sign\\
+$\backslash ongoing, \backslash prepare$ & \ongoing & prepare or ongoing sign\\
+$\backslash go$ & \go & go sign with a checkmark\\
+\toprule
+\bottomrule
+\end{tabularx}
+\label{tab:Symbols}
+\end{center}
+\end{table}%
+
+The symbols \textit{missing, tbd, attention, done, rejected} have a counter associated so that you can show the amount of the defined labels in some statistics:
+
+\greybox[Statistic about comments]{
+	\begin{tabbing}
+	\textbf{Missing:}\hspace*{1.5cm}\=\arabic{missing} \hspace*{1ex} \=items \= \missing\\
+	\textbf{To be defined:}\>\thetbd  \>items \>\tbd  \\
+	\textbf{Attention:}\>\theattention  \>items \>\attention \\
+	\textbf{Done:}\>\thedone  \>items \>\done \\
+	\textbf{Rejected:}\>\therejected  \>items \>\rejected \\
+	\end{tabbing}
+}
+
+\begin{Verbatim}
+
+\chapter{Statistic about comments ....}
+\label{stats}
+\greybox{
+	\begin{tabbing}
+	\textbf{Missing:}\hspace*{1.5cm}\=\arabic{missing} \hspace*{1ex} \=items \= \missing\\
+	\textbf{To be defined:}\>\thetbd  \>items \>\tbd  \\
+	\textbf{Attention:}\>\theattention  \>items \>\attention \\
+	\textbf{Done:}\>\thedone  \>items \>\done \\
+	\end{tabbing}
+}
+
+\end{Verbatim}
+
+\begin{tabbing}
+\end{tabbing}
+%------------------------------------------------------------------------------------------------- 
+\end{document}
+%------------------------------------------------------------------------------------------------- 

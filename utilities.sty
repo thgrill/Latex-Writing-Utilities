@@ -1,0 +1,1078 @@
+%% 
+%% `utilities.sty' v 1.2.2
+%%
+%% Author Thomas Grill
+%%   December 07, 2012
+%% 
+%% known issues:
+%%		- don't put a todo at the end of the file. insert at least a newline
+%%		- if putting formating into todo's provide a title as e.g. lists can't be displayed in the toc
+%%		- "sidecomment" does not work with ACM style as it does not allow marginpar
+%%
+%% version 1.2.2, 2012/12/07:
+%%		- added traffic light symbols
+%% version 1.2.1, 2012/08/08:
+%%		- bug fixes
+%% version 1.2.0, 2011/06/21:
+%%		- introduced the showComments switch
+%% version 1.1.9, 2011/03/29:
+%%		- introduced the parskip package to make paragraph formating nices
+%% version 1.1.8, 2010/11/15:
+%%		- todonamevar formatting
+%% version 1.1.7, 2010/08/03:
+%%		- Variables: showDraft
+%% version 1.1.6, 2010/02/19:
+%%		- Variables: showIdeas, showNotes, ...
+%% version 1.1.5, 2009/10/18:
+%%		- Notes, Ideas, Symbols, ...
+%% version 1.1.4, 2008/08/03:
+%%		- RequirePackages, Symbol definitions, tags, code environment, ...
+%%
+%% version 1.1.3, 2008/08/03:
+%%		- Marker: 
+%%			prints the text with a marker background-color (default: Yellow)
+%%			
+%% version 1.1.2, 2007/03/09:
+%%		- draftmode: 
+%%			boolean ``showNotes'' introduced, if draftmode -> true
+%%			sidecommentwidth defined
+%% version 1.1.1, 2007/02/06:
+%%		- todo box. default \todoname works now, header adopted
+%%
+%% version 1.10, 2007/01/10:
+%%		- comment, greycomment
+%%		- sidecomment
+%%		- todo box + todo toc
+%%		- examplebox
+%%
+%% version 1.00, 2006/01/17:
+%%               - first release
+%% 
+%% Makes a postit like comment box
+\def\fileversion{v1.2.1}  % for tracking purposes
+\def\filedate{August 08, 2012}    % Tom's tracking data
+%\ProvidesPackage{utilities}[\filedate, \fileversion, A tool set for writing latex documents]
+\ProvidesPackage{utilities}[2012/08/08, v1.2.1, A tool set for writing latex documents]
+\NeedsTeXFormat{LaTeX2e}[1995/06/01]
+%
+\typeout{************************************************************************}
+\typeout{Latex Writing Utilities \fileversion, \filedate }
+\typeout{utilities.sty}
+\typeout{Bugs, comments, suggestions mailto:tom@tomgrill.info}
+\typeout{************************************************************************}
+%
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%: -- PACKAGES --
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+
+%pdfsync conflicts with tabularx. if pdfsync is enabled the border is not recognized!!!
+%\RequirePackage{pdfsync} 
+\RequirePackage{ifthen}
+\RequirePackage{ifdraft}
+%\RequirePackage[usenames,dvipsnames]{color}
+\RequirePackage{pifont}
+%\RequirePackage{setspace}
+\RequirePackage{rotating} % needed for todo
+%\RequirePackage{anysize} % for being able to adjust the margins
+\RequirePackage{eso-pic} % for the backgroundpicture command
+\RequirePackage{soul} % strike-through, highlight, ....
+%\RequirePackage[pdftex,final]{graphicx}
+%\RequirePackage{moreverb} % package for writing output to a file
+\RequirePackage{wrapfig} %allows to wrap text around figures
+\RequirePackage{subfigure}
+\RequirePackage{fancybox}%for boxes with roundedcorners
+%for the list of todos
+\RequirePackage[subfigure]{tocloft}
+\RequirePackage{fancyvrb}
+%math and symbols
+\RequirePackage{amssymb,amsmath,amstext}
+\RequirePackage{bbding,pifont,wasysym,tipa}
+%singlespace environment
+\RequirePackage{setspace}
+\RequirePackage{cooltooltips}
+%reformat the paragraph spacing and indent so that it is more natural
+\RequirePackage[parfill]{parskip}
+\RequirePackage[normalem]{ulem}
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%: -- DEFINITIONS --
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%: --- COLORS ---
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%define general colors
+\definecolor {grey}{gray}{0.8} 
+\definecolor {lightgrey}{gray}{0.9} 
+\definecolor {darkgrey}{gray}{0.5} 
+%\definecolor {red}{rgb}{1,0,0}
+\definecolor {Yellow}{rgb}{1,1,0} 
+\definecolor {Green}{rgb}{0,1,0} 
+\definecolor {Pink}{rgb}{1,0.2,1}
+\definecolor {postit_color}{rgb}{0.996,0.969,0.71}
+\definecolor {postit_framecolor}{rgb}{0.767,0.708,0.302}
+\definecolor {postit_headercolor}{rgb}{0.567,0.508,0.202}
+\definecolor {comment_framecolor}{rgb}{0.996,0.671,0.671}
+\definecolor {comment_color}{rgb}{1,0.878,0.898}
+\definecolor {note_color}{rgb}{.63,.86,.52}
+\definecolor {note_framecolor}{rgb}{0,.5,0}
+
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%: --- Images ---
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%define general colors
+\def\importantIcon{images/important}
+\def\ideaIcon{images/bulb} 
+
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%: --- VARIABLES ---
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+\newlength\todowidth
+\setlength\todowidth{\linewidth}% default width of the postit box
+\definecolor {todo_color}{rgb}{0.745,1,0.592}
+\definecolor {todo_framecolor}{rgb}{0,0,0}
+
+\newlength{\todonamewidth}% temporary variable
+
+%for the postit boxes
+\def\postitwidth{\linewidth}% default width of the postit box
+\def\postitdefault{Postit}%
+
+%for the comment boxes
+\newlength\commentwidth
+\setlength\commentwidth{\linewidth}% default width of the comment box
+
+%sidecomments
+\newlength\sidecommentwidth
+\setlength\sidecommentwidth{4cm}
+\newlength\sidecommentboxwidth
+\setlength{\sidecommentboxwidth}{3.5cm}
+\provideboolean{sidecommentleft}
+\setboolean{sidecommentleft}{true}
+
+%roundedboxes
+\newlength\roundedboxwidth
+\setlength\roundedboxwidth{\fboxrule}
+
+%figures
+\newlength\figwidth
+\setlength\figwidth{\linewidth}
+
+%standardlabel for the numeration
+%\newcommand{\@enumlabel}{\ding{42}}
+\newcommand{\@enumlabel}{--}
+\newcommand{\@enumlistlabel}{\theclitem.}
+\newcommand{\labelclitem}{\theclitem.}
+
+%the defaultname used for the todos :-)
+\def\todoname{}
+
+% variable indicating if the notes defined in comments, todos, ... are visible
+%-----------------------------------------------------
+
+\provideboolean{showDraft}
+\provideboolean{showAnonymized}
+\provideboolean{showNotes}
+\provideboolean{showComments}
+\provideboolean{showPdfAnnotation}
+\provideboolean{showIdeas}
+\provideboolean{showTodos}
+%-----------------------------------------------------
+
+
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%: -- COMMANDS --
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+
+%------------------------------------------------------------------------------------------------------
+%: \setMode
+%command \setMode {mode}
+%parameter: 
+%	mode: draft, draftNoComments, submission, final
+%
+% sets the parameters for showing/hiding utility commands according to the specified mode
+%------------------------------------------------------------------------------------------------------
+
+\newcommand{\setMode}[1][final]{
+
+	\ifthenelse{\equal{#1}{final}}
+	{
+		\setboolean{showDraft}{false}
+		\setboolean{showAnonymized}{false}
+		\setboolean{showComments}{false}
+		\setboolean{showNotes}{false}
+		\setboolean{showIdeas}{false}
+		\setboolean{showTodos}{false}
+		
+		\typeout{Setting mode: #1}
+	}{}
+
+	\ifthenelse{\equal{#1}{submission}}
+	{
+		\setboolean{showDraft}{false}
+		\setboolean{showAnonymized}{true}
+		\setboolean{showComments}{false}
+		\setboolean{showNotes}{false}
+		\setboolean{showIdeas}{false}
+		\setboolean{showTodos}{false}
+
+		\typeout{Setting mode: #1}
+	}{}
+
+	\ifthenelse{\equal{#1}{draft}}
+	{
+		\setboolean{showDraft}{true}
+		\setboolean{showAnonymized}{false}
+		\setboolean{showComments}{true}
+		\setboolean{showNotes}{true}
+		\setboolean{showIdeas}{true}
+		\setboolean{showTodos}{true}
+
+		\typeout{Setting mode: #1}
+	}{}
+
+	\ifthenelse{\equal{#1}{draftNoComments}}
+	{
+		\setboolean{showDraft}{true}
+		\setboolean{showAnonymized}{false}
+		\setboolean{showComments}{false}
+		\setboolean{showNotes}{false}
+		\setboolean{showIdeas}{false}
+		\setboolean{showTodos}{false}
+
+		\typeout{Setting mode: #1}
+	}{}
+}
+
+% initialize the settings
+\ifdraft
+	{\setMode[draft]}
+	{\setMode[final]}
+
+%------------------------------------------------------------------------------------------------------
+%: \blind
+%command \blind {text}
+%parameter: text
+%------------------------------------------------------------------------------------------------------
+\newcommand{\blind}[1]{\textcolor{Gray}{#1}}
+
+%------------------------------------------------------------------------------------------------------
+%: \seeref
+%command \seeref {ref}
+%parameter: label of reference
+%------------------------------------------------------------------------------------------------------
+\newcommand{\seeref}[1]{(see \autoref{#1})}
+
+%------------------------------------------------------------------------------------------------------
+%: \anonymized
+%command \anonymized {text}
+%parameter: 
+%------------------------------------------------------------------------------------------------------
+% shows the text depending on the switch "showAnonymized
+\newcommand{\anonymized}[1]{%
+\ifshowAnonymized%
+\texttt{<anonymized>}
+\else%
+#1
+\fi
+}
+%------------------------------------------------------------------------------------------------------
+%: \setMarginSize
+%command \setMarginSize {0cm}{0cm}{0cm}
+%parameter: set the marginsizes
+%------------------------------------------------------------------------------------------------------
+% set the margins of a page
+\newcommand{\setMargins}[3]{
+
+	\oddsidemargin #1
+	\evensidemargin #2
+	\topmargin #3
+	
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \setboxwidths
+%command \setboxwidths
+%parameter: width of box as length
+%------------------------------------------------------------------------------------------------------
+% set the width of all boxes to ...
+\newcommand{\setboxwidths}[1]{
+	\setlength{\todowidth}{#1}
+	\setlength{\commentwidth}{#1}
+	\setlength{\postitwidth}{#1}
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \postit
+%command postit
+%optional parameter: width of box; range: 0..1 of linewith
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\postit}[2][\postitdefault]{
+	\ifshowComments
+       	   \begin{singlespace}
+		   \par\noindent
+		   \fcolorbox{postit_framecolor}{postit_color}{\parbox[c]{\postitwidth}{\textcolor{postit_headercolor}{\textbf{#1:}}\newline #2}}
+	    \end{singlespace}
+	\fi
+}  
+%------------------------------------------------------------------------------------------------------
+%uncomment if you want to hide the postits%------------------------------------------------------------------------------------------------------
+%\renewcommand{\postit}[2][1]{}
+
+%------------------------------------------------------------------------------------------------------
+%postit-environment
+%------------------------------------------------------------------------------------------------------
+\newenvironment{postit_area}[2][\postitwidth]{
+%begin
+\fcolorbox{postit_framecolor}{postit_color}{\parbox{#1 \textwidth}{#2}} \newline
+}
+{
+%end
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \idea
+%command idea
+%optional parameter: width of box; range: 0..1 of linewith
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\idea}[1]{
+
+	\ifshowIdeas
+	      	\begin{singlespace}
+	   	\par\noindent
+		\fcolorbox{postit_framecolor}{postit_color}{\parbox[c]{\postitwidth}{\textcolor{postit_headercolor}{\textbf{Idea:}}\newline #1}}
+%		\postit[\textbf{Idea}]{#1}
+		\marginpar{\raggedleft\includegraphics[width=1.2cm]{\ideaIcon}}
+		\end{singlespace}
+	\fi
+}  
+
+%------------------------------------------------------------------------------------------------------
+%: \important
+%optional parameter: width of box; range: 0..1 of linewith
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\important}[1]{
+\ifshowNotes
+	      	\begin{singlespace}
+	   	\par\noindent
+		\fcolorbox{note_framecolor}{note_color}{\parbox[c]{\postitwidth}{{\textbf{Important:}}\newline #1}}
+%		\postit[\textbf{Idea}]{#1}
+		\marginpar{\raggedleft\includegraphics[width=1.2cm]{\importantIcon}}
+		\end{singlespace}
+\fi
+}  
+%------------------------------------------------------------------------------------------------------
+%: \note
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\note}[2][note]{
+\ifshowNotes
+%	\colorcomment[#1]{YellowGreen}{#2}
+	\begin{singlespace}
+		\par\noindent
+		\fcolorbox{note_framecolor}{note_color}{
+		\parbox[c]{\commentwidth}{\textbf{#1:} #2}}
+	\end{singlespace}
+\fi
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \insertText
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\insertText}[1]{
+\ifshowNotes
+	\begin{singlespace}
+		\marginpar{\bf\textcolor{note_framecolor}*}%
+		\par\noindent%
+		\fcolorbox{red}{white}{
+		\parbox[c]{\commentwidth}{\colorbox{note_framecolor}{\textbf{\textcolor{white}Insert:}} #1}}		
+	\end{singlespace}
+\else%
+#1
+\fi
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \Comments
+%------------------------------------------------------------------------------------------------------
+\newcommand{\comment}[2][Comment]{
+	\ifshowComments
+       	 \begin{singlespace}
+	   \par\noindent
+	 \fcolorbox{comment_framecolor}{comment_color}{\parbox{\commentwidth}{\textbf{#1:} #2}}
+          \end{singlespace}
+	\fi
+}
+
+\newcommand{\colorcomment}[3][Comment]{
+	\ifshowComments
+		
+			\ifthenelse{\equal{#2}{}}
+				{\definecolor{colorcomment_color}{gray}{0.9}}
+				{\definecolor{colorcomment_color}{named}{#2}}
+
+			 \begin{singlespace}
+				\par\noindent
+				 \fcolorbox{darkgrey}{colorcomment_color}{\parbox{\commentwidth}{\textbf{#1:} #3}}
+			 \end{singlespace}
+	\fi
+}
+
+%place the margin comments
+\newcommand{\sidecomment}[2][\ding{88}]
+{
+%	\typeout{Class: \@DocumentClassName}
+%	\ifthenelse{\equal{\@currentclass}{sig-alternate.cls}
+%		{Sidecomment not allowed in class \@currentclass}
+%		{
+			\ifthenelse{\equal{\todotext}{}} 
+				{\def\todotext{\texttt{ENTER THE TODO DESCRIPTION!}}}
+				{}	
+				
+			\ifshowComments
+			
+				\ifthenelse{\equal{#1}{}}
+					{\def\preambel{\ding{88}}}
+					{	\stepcounter{sidecomments}
+						\def\preambel{\thesidecomments}
+					}
+				\stepcounter{sidecomments}
+				\fcolorbox{red}{comment_color}{\preambel}
+				\ifsidecommentleft
+					\reversemarginpar
+				\else
+					\normalmarginpar
+				\fi
+				\marginparsep2mm
+				\setlength{\marginparwidth}{\sidecommentwidth}
+				\marginpar{%
+					\fcolorbox{red}{comment_color}{
+%						\parbox{\sidecommentboxwidth}{\raggedright{\textbf{\textcolor{red}{#1:}} #2}}%
+						\parbox{\sidecommentboxwidth}{\raggedright{\textbf{\textcolor{red}{\preambel:}} #2}}%
+					}%colorbox
+				}%marginpar
+			\fi
+%		}
+%	}
+}
+%------------------------------------------------------------------------------------------------------
+%: \todo
+% command todo
+% optional parameter #1: todoname
+% parameter #2: 		Title as to appear in index;
+%						 if par 3 empty -> par 2 = par 3
+% parameter #3:		Text of ToDo
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\listtodos}{List of To-Do's}
+%\newlistof[section]{todos}{lop}{\listtodos}
+%
+%make a new list with the name and file extension: todo
+\newlistof{todos}{todo}{\listtodos}
+\cftsetindents{todos}{0em}{2.5em}
+
+\newcommand{\todo}[3][]
+{
+	\def\todotitletext{TODO}
+	\def\todotitle{\todotitletext}
+	\def\todotext{#2}
+	
+	%check if the name is given
+	\settowidth{\todonamewidth}{\todoname}
+	\ifthenelse{\lengthtest{\todonamewidth>0pt}}
+		{\def\todonamevar{\bf\todoname }}
+		{\def\todonamevar{}}
+	
+	%check if a todotext is given
+	\settowidth{\todonamewidth}{\todotext}
+	\ifthenelse{\lengthtest{\todonamewidth>0pt}}
+%	\ifthenelse{\equal{\todotext}{}} 
+		{\def\todotext{\texttt{ENTER THE TODO DESCRIPTION!}}}
+		{}
+
+%if #1 == '''' then todoname='''' else ....
+	\ifthenelse{\equal{#2}{}}
+		{\def\todotitle{\todotitle}}
+		{\def\todotitle{#2}}
+
+	\ifthenelse{\equal{#1}{}}
+		{\def\todoheader{\todonamevar: (Section \thesection) -- \todotitle}}
+		{\def\todoheader{#1: (Section \thesection) -- \todotitle}}
+
+	\def\todotext{\todoheader \newline #3}
+
+	% the equal does not work for #3 :-(
+	%\ifthenelse{\equal{#3}{}}	{}{}
+	
+	\refstepcounter{todos}	
+	\addcontentsline{todo}{todos}{\protect\numberline{\thetodos} \todoheader\relax }
+%	
+	\ifshowTodos
+		\par\noindent
+		\marginparsep2mm
+		\setlength{\marginparwidth}{1cm}
+		\ifsidecommentleft
+			\reversemarginpar
+		\else
+			\normalmarginpar
+		\fi
+		\marginpar{\fcolorbox{todo_framecolor}{todo_color}{\rotatebox{90}{\bf \todotitletext}}}%
+		\fcolorbox{todo_framecolor}{todo_color}{\parbox[c]{\todowidth}{\todotext}}
+		%\par
+	\fi
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \todoOK
+% command todoOK
+% optional parameter #1: todoname
+% parameter #2: 		Title as to appear in index;
+%						 if par 3 empty -> par 2 = par 3
+% parameter #3:		Text of ToDo
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\todoOK}[3][]
+{
+	\def\todotitletext{TODO}
+	\def\todotitle{\todotitletext}
+	\def\todotext{#2}
+	
+	%check if the name is given
+	\settowidth{\todonamewidth}{\todoname}
+	\ifthenelse{\lengthtest{\todonamewidth>0pt}}
+		{\def\todonamevar{\bf\todoname: }}
+		{\def\todonamevar{}}
+	
+	%check if a todotext is given
+	\settowidth{\todonamewidth}{\todotext}
+	\ifthenelse{\lengthtest{\todonamewidth>0pt}}
+%	\ifthenelse{\equal{\todotext}{}} 
+		{\def\todotext{\texttt{ENTER THE TODO DESCRIPTION!}}}
+		{}
+
+%if #1 == '''' then todoname='''' else ....
+	\ifthenelse{\equal{#2}{}}
+		{\def\todotitle{\todotitle}}
+		{\def\todotitle{#2}}
+
+	\ifthenelse{\equal{#1}{}}
+		{\def\todoheader{\todonamevar: \textcolor{Green}{\check} (Section \thesection) -- \todotitle}}
+		{\def\todoheader{#1: \textcolor{Green}{\check} (Section \thesection) -- \todotitle}}
+
+	\def\todotext{\todoheader \newline #3}
+
+	% the equal does not work for #3 :-(
+	%\ifthenelse{\equal{#3}{}}	{}{}
+	
+	\refstepcounter{todos}	
+	\addcontentsline{todo}{todos}{\protect\numberline{\thetodos} \todoheader\relax }
+%	
+	\ifshowTodos
+		\par\noindent
+		\marginparsep2mm
+		\setlength{\marginparwidth}{1cm}
+		\ifsidecommentleft
+			\reversemarginpar
+		\else
+			\normalmarginpar
+		\fi
+		\marginpar{\fcolorbox{todo_framecolor}{todo_color}{\rotatebox{90}{\bf \todotitletext}}}%
+		\fcolorbox{todo_framecolor}{todo_color}{\parbox[c]{\todowidth}{\todotext}}
+		%\par
+	\fi
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \emptypage
+% command \emptypage
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\emptypage}{
+\newpage
+\thispagestyle{empty}
+\mbox{ }
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \emptypage
+% command \emptypage
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand{\emptypageOnTwoSide}{
+\if@twoside
+\emptypage
+\fi
+}
+%------------------------------------------------------------------------------------------------------
+%: -- Boxes --
+%------------------------------------------------------------------------------------------------------
+%\newcommand{\listexamples}{List of Examples}
+%%\newlistof[section]{todos}{lop}{\listtodos}
+%%
+%%make a new list with the name and file extension: todo
+%\newlistof{examples}{loe}{\listtodos}
+%\cftsetindents{examples}{0em}{2.5em}
+
+%\newenvironment{example}[2][Example]{
+%\example[#1]{#2}
+%}
+%{
+%\centering
+%\end{minipage}
+%%\pagecolor{white}
+%%end
+%}
+
+%: \example
+\newcommand{\example}[2][Example]{
+	\def\exampletitle{#1}
+	\ifthenelse{\equal{#1}{}}
+		{\def\exampletitle{Example: }}
+		{\def\exampletitle{Example -- #1}}
+	%\greybox[\exampletitle]{#2}
+	\rTitlebox{#1}{#2}
+}
+
+%: \greybox
+\newcommand{\greybox}[2][]{
+	
+	\def\greytitle{#1}
+	\ifthenelse{\equal{#1}{}}
+		{}
+		{\def\greytitle{\textbf{#1: }}}
+	\noindent
+	\begin{center}
+	\par
+	\fcolorbox{darkgrey}{lightgrey}{\parbox{0.95 \linewidth}{\greytitle#2}}
+	\end{center}
+}
+
+%: \roundedbox
+\newcommand{\roundedbox}[3][\linewidth]{
+% #1 .... boxwidth
+% #2 .... cornersize
+% #3 .... text	
+	\begin{center}
+	\noindent
+	\cornersize*{#2}
+	\setlength{\fboxsep}{3mm}
+	%\ovalbox{\parbox{0.95 \linewidth}{#2}}
+	\ovalbox{\begin{minipage}{#1}#3\end{minipage}}
+	\end{center}
+}
+
+%: \rbox
+\newcommand{\rbox}[1]{
+
+	\roundedbox[.95 \linewidth]{3mm}{#1}
+}
+
+%: \roundedTitlebox
+\newcommand{\roundedTitlebox}[3][\linewidth]{
+% #1 .... width
+% #2 .... title
+% #3 .... text
+
+	\roundedbox[#1]{3mm}{
+		\begin{minipage}{\linewidth}
+		%\vspace*{0mm}
+		\begin{flushright}\bf \large #2\end{flushright}
+		\vspace*{-1.6\baselineskip}
+		\end{minipage}
+		%ruler
+		\setlength{\roundedboxwidth}{\linewidth}
+		\addtolength{\roundedboxwidth}{2\fboxsep}
+		\hspace*{-\fboxsep}\rule{\roundedboxwidth}{.7pt}
+		%\vspace*{-1\baselineskip}
+		#3
+%		\smallskip
+	}
+}
+
+\newcommand{\rTitlebox}[2]{
+
+	\roundedTitlebox[.95\linewidth]{#1}{#2}
+}
+
+%------------------------------------------------------------------------------------------------------
+%: -- Tables --
+% Space adjustment in tables
+%------------------------------------------------------------------------------------------------------
+
+% adjust the padding of a table row
+% make a rule with a height of (default: 2.4ex)
+\newcommand\TopRowSpace[1][2.4ex]{\rule{0pt}{#1}}
+% maka a rule with no height/width but offset the rule to keep the bottom space of the table row 
+\newcommand\BottomRowSpace[1][-1.2ex]{\rule[#1]{0pt}{0pt}}
+
+% make a header column by inserting space at the top and bottom of the current row
+% L ... left align
+% C ... center align
+% P ... right align
+\newcolumntype{L}{>{\TopRowSpace\bf}l<{\BottomRowSpace}}
+\newcolumntype{C}{>{\TopRowSpace\bf}c<{\BottomRowSpace}}
+\newcolumntype{R}{>{\TopRowSpace\bf}r<{\BottomRowSpace}}
+
+% allow setting the row style with the command \rowstyle
+% in order to make this work the first column needs to precede $ and the following the ^ character.
+%
+% Example: 
+%\begin{tabular}{$l ^l ^l}   \hline
+%  Meek & mild & entry      \\
+%  \rowstyle{\bfseries}
+%  Heading & Big and & Bold \\
+%  \rowstyle{\itshape}
+%  Strange & and & italic   \\
+%\end{tabular}
+
+%: \rowstyle - sets the style for a row
+%
+% Parameters:
+% #1 ... a style setting like e.g. \bf, \it, etc.
+
+\newcolumntype{$}{>{\global\let\currentrowstyle\relax}} % for the first column definition
+\newcolumntype{_}{>{\currentrowstyle}} % for the following column definitions
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
+  #1\ignorespaces
+}
+
+%: \titlerow - sets the style for a title row
+%
+% Parameters:
+% #1 ... background color
+% #2 ... foreground color
+\newcommand{\titlerow}[2]{
+
+	\rowcolor{#1}
+	\rowstyle{\TopRowSpace\bfseries\color{#2}\BottomRowSpace}
+}
+
+%
+%------------------------------------------------------------------------------------------------------
+%: -- Enumeration Environments --
+% Compact list boxes with enumeration
+%------------------------------------------------------------------------------------------------------
+\newcounter{clitem}
+
+%: {compactlist}
+\newenvironment{compactlist}[1][ \@enumlabel] {%
+%\renewcommand{\labelitemi}{#1}
+%\begin{list}{\@enumlabel} 
+\begin{list}{#1} 
+{
+	\setlength{\topsep}{0cm} 
+	\setlength{\itemsep}{0cm} 
+	\setlength{\parsep}{0cm} 
+	\setlength{\parskip}{0.2cm} 
+	\setlength{\leftmargin}{0.9cm} 
+	\setlength{\labelwidth}{0.7cm} 
+	\setlength{\labelsep}{2mm} 
+%	\renewcommand{\makelabel}[1]{#1}
+}
+}
+{\end{list}}
+
+%: {compactenum}
+% parameters
+% #1: a .... a, b, c
+%       A .... A, B, C
+%       r  .... i, ii, ii
+%       R .... I, II, II
+\newenvironment{compactenum}[1][] {
+\setcounter{clitem}{0}
+
+\ifthenelse{\equal{#1}{a}}{\renewcommand{\labelclitem}{\alph{clitem}.}}{}
+\ifthenelse{\equal{#1}{A}}{\renewcommand{\labelclitem}{\Alph{clitem}.}}{}
+\ifthenelse{\equal{#1}{r}}{\renewcommand{\labelclitem}{\roman{clitem}.}}{}
+\ifthenelse{\equal{#1}{R}}{\renewcommand{\labelclitem}{\Roman{clitem}.}}{}
+
+\begin{list}{\labelclitem} 
+	{
+	\usecounter{clitem}
+	\setlength{\topsep}{0cm} 
+	\setlength{\itemsep}{0cm} 
+	\setlength{\parsep}{0cm} % Abstand zwischen den paragraphs: -> items  
+	\setlength{\parskip}{0.2cm} % Abstand zum Text davor
+	\setlength{\leftmargin}{0.7cm} 
+	\setlength{\labelwidth}{0.7cm} 
+	\setlength{\labelsep}{2mm} 
+%	\renewcommand{\makelabel}[1]{\theclitem.}
+	}
+}
+{
+\end{list}
+}
+
+%------------------------------------------------------------------------------------------------------
+%: -- Watermark picture --
+% positiones a background picture on each page
+%------------------------------------------------------------------------------------------------------
+%: \BackgroundPicture
+
+\newcommand\BackgroundPicture[4]{%
+ \setlength{\unitlength}{1pt}%
+ \put(0,\strip@pt\paperheight){%
+   \parbox[t][\paperheight]{\paperwidth}{%
+     \vfill
+     \centering\includegraphics[width=#2,angle=#3]{#4.pdf}
+     \vfill
+   }
+ }
+} %
+
+%------------------------------------------------------------------------------------------------------
+%: -- Marker --
+% prints the text with a marker-style background
+%------------------------------------------------------------------------------------------------------
+%default-color: Yellow
+%
+%:\marker
+\newcommand\marker[2][Yellow]{%
+%
+\def\markerbackground{Yellow}%
+\ifthenelse{\equal{#1}{Y}}{\def\markerbackground{Yellow}}{}%
+\ifthenelse{\equal{#1}{G}}{\def\markerbackground{Green}}{}%
+\ifthenelse{\equal{#1}{P}}{\def\markerbackground{Pink}}{}%
+\ifthenelse{\equal{#1}{y}}{\def\markerbackground{Yellow}}{}%
+\ifthenelse{\equal{#1}{g}}{\def\markerbackground{Green}}{}%
+\ifthenelse{\equal{#1}{p}}{\def\markerbackground{Pink}}{}%
+%
+\ifshowNotes%
+\sethlcolor{\markerbackground}%
+\hl{#2}%
+\else%
+#2%
+\fi%
+} %
+
+%: {markbox}
+\newcommand\markbox[2][Yellow]{%
+
+	   \def\markerbackground{Yellow}	
+	\ifthenelse{\equal{#1}{Y}}{\def\markerbackground{Yellow}}{}
+	\ifthenelse{\equal{#1}{G}}{\def\markerbackground{Green}}{}
+	\ifthenelse{\equal{#1}{P}}{\def\markerbackground{Pink}}{}
+	\ifthenelse{\equal{#1}{y}}{\def\markerbackground{Yellow}}{}
+	\ifthenelse{\equal{#1}{g}}{\def\markerbackground{Green}}{}
+	\ifthenelse{\equal{#1}{p}}{\def\markerbackground{Pink}}{}
+
+	\ifshowNotes
+		\par\noindent
+		\colorbox{\markerbackground}{\parbox{\postitwidth}{#2}}
+	\else
+		#2
+	\fi
+} %
+
+%------------------------------------------------------------------------------------------------------
+% see - a ref wrapper
+%------------------------------------------------------------------------------------------------------
+%: \see
+%\newcommand\see[1]{%
+%see \ref{#1}
+%}
+%------------------------------------------------------------------------------------------------------
+%: -- pdf annotation --
+%------------------------------------------------------------------------------------------------------
+%
+%: \pdfnote
+\newcommand\pdfnote[2][Note]{%
+\ifshowPdfAnnotation
+	\pdfannot{/Subtype /Text 
+		/Name 
+		/Comment 
+		/T (#1) 
+		/C [1 .2 0.2] /Border [0 5 3] %Color
+		%/Open true 
+		/Contents(\pdfescapestring{\detokenize{#2}}) 
+	}
+\fi		
+} %
+
+%
+%: \pdfpopup
+\newcommand\pdfpopup[2]{%
+\ifshowPdfAnnotation
+%\cooltooltip{title}{message}{tooltip}{text}
+	\cooltooltip [0 0 1] {Note}{#2}{}{}{#1} 
+\fi
+}
+%------------------------------------------------------------------------------------------------------
+%: -- text formatting --
+%------------------------------------------------------------------------------------------------------
+%
+\newcommand\tracknew[1]{%
+\ifshowDraft
+{\color{red}#1}%
+\else%
+#1%
+\fi}
+
+\newcommand\trackold[1]{%
+\ifshowDraft%
+\sout{#1}%
+\fi}
+
+%------------------------------------------------------------------------------------------------------
+%: -- paragraph formatting --
+%------------------------------------------------------------------------------------------------------
+%------------------------------------------------------------------------------------------------------
+% indent paragraph
+%------------------------------------------------------------------------------------------------------
+%
+%: \indentpar
+\newcommand\indentpar[2][1cm]{%
+\hangindent#1
+\hangafter0
+#2
+}%
+
+%------------------------------------------------------------------------------------------------------
+% display code from sourcefile
+% Example:
+%: \sourceinput
+%------------------------------------------------------------------------------------------------------
+%\def\sourcetabsize{4}
+\newenvironment{sourcestyle}{\begin{scriptsize}}{\end{scriptsize}}
+%\def\sourceinput#1{\par\begin{sourcestyle}\verbatimtabinput[\sourcetabsize]{#1}\end{sourcestyle}\par}
+\newcommand\sourceinput[2][4]{\par\begin{sourcestyle}\verbatimtabinput[#1]{#2}\end{sourcestyle}\par}
+
+
+%------------------------------------------------------------------------------------------------------
+%: code environment
+% code environment using the fancyvrb package
+%------------------------------------------------------------------------------------------------------
+\newenvironment{code}
+{
+%\begin{minipage}[t]{\linewidth}
+\begin{Verbatim}%[frame=lines]
+%\begin{alltt}
+}
+{
+\end{Verbatim}
+%\end{minpage}
+%\end{alltt}
+}
+
+%------------------------------------------------------------------------------------------------------
+%: \mono
+% print the text inline monospaced
+%------------------------------------------------------------------------------------------------------
+\newcommand\mono[1]{
+%\begin{Verbatim}#1\end{Verbatim}
+$\mathtt{#1}$
+%\verb|#1|
+%\begin{verbatim*}
+%	#1
+%\end{verbatim*}
+%\begin{verbatim}#1\end{verbatim}
+%\begin{verbatimtab}#1\end{verbatimtab}
+}
+%------------------------------------------------------------------------------------------------------
+% counters for symbols
+%------------------------------------------------------------------------------------------------------
+\newcounter{missing}
+\newcounter{tbd}
+\newcounter{attention}
+\newcounter{done}
+\newcounter{rejected}
+\newcounter{sidecomments}
+%------------------------------------------------------------------------------------------------------
+%: -- Symbol abbreviations --
+%------------------------------------------------------------------------------------------------------
+%
+%
+%general definitions and abbreviations
+%: \ra - right arrow
+\def\ra{\ding{220} }%{$\Rightarrow$}
+%: \la - left arrow
+\def\la{\reflectbox{\ding{220}} }%{$\Leftarrow$}
+
+%: \check -- checkmark
+\def\check{\ding{52}}
+%: \cross
+\def\cross{\ding{56}}
+
+%: \degree
+\newcommand{\degree}{\ensuremath{^\circ}}
+
+%: \makeline
+\newcommand{\makeline}{\rule{\linewidth}{1pt}}
+
+%------------------------------------------------------------------------------------------------------
+%: --- todo symbols ---
+%------------------------------------------------------------------------------------------------------
+%
+%: \done
+\def\done{\textcolor{Green}{\check}\hspace{.9em}\stepcounter{done}}
+\newcommand\isDone[1]{\done #1 \\}
+
+%: \rejected
+\def\rejected{\textcolor{red}{\CrossOpenShadow}\hspace{1em}\stepcounter{rejected}}
+\newcommand\isRejected[2][]{\rejected {\bf #1:} #2}
+%\def\rejected{\textcolor{red}{\Stopsign}\hspace{1em}\stepcounter{rejected}}
+%marvosym char: unfortunately conflicts with bbding
+%\def\rejected{\textcolor{red}{\MVZero}\hspace{1em}\stepcounter{rejected}}
+
+
+%: \missing
+%\def\missing{\textcolor{red}{\large\TriangleUp \textcolor{black}{\hspace{-12.5pt}\textsuperimposetilde{$\vee$}}\hspace{5.5pt}}
+%}
+\def\missing{\textcolor[rgb]{1,0.1,0.1}{\raisebox{-.6ex}{\large\CircleSolid}\textcolor{Yellow}{{\hspace{-.95em}\textsuperimposetilde{$\vee$}}}\hspace{.8em}}	\stepcounter{missing}}
+%\def\missing{\textcolor[rgb]{1,0.1,0.1}{\raisebox{-.6ex}{\large\FilledBigCircle}\textcolor{Yellow}{{\hspace{-.95em}\textsuperimposetilde{$\vee$}}}\hspace{.8em}}	\stepcounter{missing}}
+
+\newcommand\isMissing[1]{\missing #1 \\}
+
+%: \attention
+\def\attention{\textcolor{Yellow}{\raisebox{-.4ex}{\large\TriangleUp} \textcolor{black}{\hspace{-12.7pt}\textbf{!}}}\hspace{12pt}\stepcounter{attention}	
+}
+
+%: \tbd -- to be defined
+\def\tbd{\textcolor[rgb]{1,0.4,0.4} {\large\CircleSolid \textcolor{black}{\hspace{-10pt}\small\textbf{tbd}}}\hspace{12pt}\stepcounter{tbd}}
+%\def\tbd{\textcolor[rgb]{1,0.4,0.4} {\large\FilledBigCircle \textcolor{black}{\hspace{-10pt}\small\textbf{tbd}}}\hspace{12pt}\stepcounter{tbd}}
+\newcommand\isTbd[1]{\tbd #1 \\}
+
+% Traffic Light Symbols
+%: \stop -- stop
+\def\stop{\textcolor[rgb]{1,0.1,0.1} {\raisebox{-.5ex}{%
+\large\CircleSolid \textcolor{white}{\hspace{-.75em}\rule[.75ex]{.55em}{2pt}}}}%
+\hspace{12pt}\stepcounter{tbd}}
+%: \ongoing, \prepare -- ongoing preparation, attention
+\def\ongoing{\textcolor[rgb]{1,0.57,0} {\raisebox{-.45ex}{%
+\large\CircleSolid \raisebox{.6ex}{\hspace{-9pt}\color{black}\small\bf:)}}}%
+\hspace{12pt}\stepcounter{tbd}}
+\def\prepare{\ongoing}
+%: \go -- a green light with a checkmark
+\def\go{\textcolor[rgb]{.5,0.7,0.2} {\raisebox{-.4ex}{%
+\large\CircleSolid \hspace{-1em}\raisebox{.4ex}{\hspace{.2em}\normalsize\color[rgb]{.12,.26,.06}\small\check}}
+}\hspace{12pt}\stepcounter{tbd}}
+
+%------------------------------------------------------------------------------------------------------
+% end of utilities.sty
+%------------------------------------------------------------------------------------------------------
